@@ -9,7 +9,7 @@ A simple REST API for managing wallet transactions — built with Node.js, Expre
 **Requirements:** Node.js v22.5.0+
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Moses-Mbugs/mini-wallet-api
 cd mini-wallet-api
 npm install
 node src/app.js
@@ -43,8 +43,8 @@ POST /wallets
 Content-Type: application/json
 
 {
-  "name": "Alice Kariuki",
-  "email": "alice@example.com"
+  "name": "Johnny Bravo",
+  "email": "johnny.bravo@example.com"
 }
 ```
 **Response `201`:**
@@ -53,8 +53,8 @@ Content-Type: application/json
   "message": "Wallet created.",
   "wallet": {
     "id": "uuid",
-    "name": "Alice Kariuki",
-    "email": "alice@example.com",
+    "name": "Johnny Bravo",
+    "email": "johnny.bravo@example.com",
     "balance": 0,
     "created_at": "2024-01-01T10:00:00"
   }
@@ -114,7 +114,7 @@ GET /wallets/:id/statement?from=2024-01-01&to=2024-12-31
 **Response `200`:**
 ```json
 {
-  "wallet": { "id": "uuid", "name": "Alice Kariuki", "email": "alice@example.com" },
+  "wallet": { "id": "uuid", "name": "Johnny Bravo", "email": "johnny.bravo@example.com" },
   "period": { "from": "2024-01-01", "to": "2024-12-31" },
   "summary": {
     "total_credits": 1000,
@@ -150,7 +150,7 @@ GET /wallets/:id/reconcile
 ```json
 {
   "wallet_id": "uuid",
-  "name": "Alice Kariuki",
+  "name": "Johnny Bravo",
   "status": "OK",
   "actual_balance": 750,
   "expected_balance": 750,
