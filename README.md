@@ -56,7 +56,7 @@ Content-Type: application/json
     "name": "Johnny Bravo",
     "email": "johnny.bravo@example.com",
     "balance": 0,
-    "created_at": "2024-01-01T10:00:00"
+    "created_at": "2026-03-16T10:00:00"
   }
 }
 ```
@@ -102,7 +102,7 @@ GET /wallets/:id/transactions
 Returns all transactions with a running balance. Supports optional date filtering.
 
 ```
-GET /wallets/:id/statement?from=2024-01-01&to=2024-12-31
+GET /wallets/:id/statement?from=2025-03-16&to=2026-03-16
 ```
 
 **Query params (optional):**
@@ -115,7 +115,7 @@ GET /wallets/:id/statement?from=2024-01-01&to=2024-12-31
 ```json
 {
   "wallet": { "id": "uuid", "name": "Johnny Bravo", "email": "johnny.bravo@example.com" },
-  "period": { "from": "2024-01-01", "to": "2024-12-31" },
+  "period": { "from": "2025-03-16", "to": "2026-03-16" },
   "summary": {
     "total_credits": 1000,
     "total_debits": 250,
@@ -130,7 +130,7 @@ GET /wallets/:id/statement?from=2024-01-01&to=2024-12-31
       "sender_wallet_id": null,
       "receiver_wallet_id": "uuid",
       "note": "Salary",
-      "created_at": "2024-01-01T10:00:00",
+      "created_at": "2026-03-16T10:00:00",
       "running_balance": 1000
     }
   ]
