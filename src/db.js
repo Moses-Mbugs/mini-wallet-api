@@ -1,15 +1,14 @@
-const Database = require("better-sqlite3");
+const { DatabaseSync } = require("node:sqlite");
 const path = require("path");
 
 const DB_PATH = path.join(__dirname, "..", "wallet.db");
 
-const db = new Database(DB_PATH);
+const db = new DatabaseSync(DB_PATH);
 
-// Enable WAL mode for better concurrency
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+db.exec(`PRAGMA journal_mode = WAL`);
+db.exec(`PRAGMA foreign_keys = ON`);
 
-// Run migrations
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS wallets (
     id          TEXT PRIMARY KEY,

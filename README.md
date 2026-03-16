@@ -1,26 +1,28 @@
 # Mini Wallet Transaction API
 
-A simple REST API for managing wallet transactions — built with Node.js, Express, and SQLite.
+A simple REST API for managing wallet transactions — built with Node.js, Express, and SQLite (via Node.js built-in `node:sqlite`).
 
 ---
 
 ## Setup
 
-**Requirements:** Node.js v18+
+**Requirements:** Node.js v22.5.0+
 
 ```bash
 git clone <your-repo-url>
 cd mini-wallet-api
 npm install
-npm start
+node src/app.js
 ```
 
 The server starts on **http://localhost:3000** by default.
 
 Set a custom port via environment variable:
 ```bash
-PORT=4000 npm start
+PORT=4000 node src/app.js
 ```
+
+> **Note:** Node's built-in SQLite is experimental. If you see a warning on startup, run with `node --no-warnings src/app.js` to suppress it.
 
 ---
 
@@ -96,6 +98,72 @@ GET /wallets/:id/transactions
 
 ---
 
+#### Get wallet statement
+Returns all transactions with a running balance. Supports optional date filtering.
+
+```
+GET /wallets/:id/statement?from=2024-01-01&to=2024-12-31
+```
+
+**Query params (optional):**
+| Param | Format | Description |
+|---|---|---|
+| `from` | `YYYY-MM-DD` | Start date (inclusive) |
+| `to` | `YYYY-MM-DD` | End date (inclusive) |
+
+**Response `200`:**
+```json
+{
+  "wallet": { "id": "uuid", "name": "Alice Kariuki", "email": "alice@example.com" },
+  "period": { "from": "2024-01-01", "to": "2024-12-31" },
+  "summary": {
+    "total_credits": 1000,
+    "total_debits": 250,
+    "net": 750,
+    "current_balance": 750
+  },
+  "transactions": [
+    {
+      "id": "uuid",
+      "type": "deposit",
+      "amount": 1000,
+      "sender_wallet_id": null,
+      "receiver_wallet_id": "uuid",
+      "note": "Salary",
+      "created_at": "2024-01-01T10:00:00",
+      "running_balance": 1000
+    }
+  ]
+}
+```
+
+---
+
+#### Reconcile wallet
+Verifies that the wallet's stored balance matches what can be computed from its transaction history. Useful for detecting data integrity issues.
+
+```
+GET /wallets/:id/reconcile
+```
+
+**Response `200`:**
+```json
+{
+  "wallet_id": "uuid",
+  "name": "Alice Kariuki",
+  "status": "OK",
+  "actual_balance": 750,
+  "expected_balance": 750,
+  "total_credits": 1000,
+  "total_debits": 250,
+  "discrepancy": 0
+}
+```
+
+`status` is either `"OK"` or `"MISMATCH"`. A mismatch means the stored balance has drifted from the transaction log — which should never happen under normal operation as all balance updates are wrapped in transactions.
+
+---
+
 ### Transfers
 
 #### Transfer between wallets
@@ -140,24 +208,30 @@ Content-Type: application/json
 # 1. Create two wallets
 curl -s -X POST http://localhost:3000/wallets \
   -H "Content-Type: application/json" \
-  -d '{"name":"Alice","email":"alice@example.com"}'
+  -d '{"name":"Johnny Bravo","email":"johnny.bravo@example.com"}'
 
 curl -s -X POST http://localhost:3000/wallets \
   -H "Content-Type: application/json" \
-  -d '{"name":"Bob","email":"bob@example.com"}'
+  -d '{"name":"Donkey Kong","email":"donkey.kong@example.com"}'
 
-# 2. Deposit into Alice's wallet (replace ALICE_ID)
-curl -s -X POST http://localhost:3000/wallets/ALICE_ID/deposit \
+# 2. Deposit into Johnny's wallet (replace JOHNNY_ID)
+curl -s -X POST http://localhost:3000/wallets/JOHNNY_ID/deposit \
   -H "Content-Type: application/json" \
   -d '{"amount":1000,"note":"Salary"}'
 
-# 3. Transfer from Alice to Bob
+# 3. Transfer from Johnny to Donkey Kong
 curl -s -X POST http://localhost:3000/transfers \
   -H "Content-Type: application/json" \
-  -d '{"sender_wallet_id":"ALICE_ID","receiver_wallet_id":"BOB_ID","amount":250}'
+  -d '{"sender_wallet_id":"JOHNNY_ID","receiver_wallet_id":"DONKEY_KONG_ID","amount":250}'
 
-# 4. Check Alice's transaction history
-curl -s http://localhost:3000/wallets/ALICE_ID/transactions
+# 4. Get Johnny's statement
+curl -s "http://localhost:3000/wallets/JOHNNY_ID/statement"
+
+# 5. Reconcile Johnny's wallet
+curl -s "http://localhost:3000/wallets/JOHNNY_ID/reconcile"
+
+# 6. Check Johnny's full transaction history
+curl -s http://localhost:3000/wallets/JOHNNY_ID/transactions
 ```
 
 ---
@@ -168,9 +242,9 @@ curl -s http://localhost:3000/wallets/ALICE_ID/transactions
 mini-wallet-api/
 ├── src/
 │   ├── app.js              # Express app + server entry
-│   ├── db.js               # SQLite connection + schema migrations
+│   ├── db.js               # SQLite connection + schema
 │   └── routes/
-│       ├── wallets.js      # Wallet CRUD + deposit
+│       ├── wallets.js      # Wallet CRUD, deposit, statement, reconcile
 │       └── transfers.js    # Transfer endpoint
 ├── wallet.db               # Auto-created on first run (gitignored)
 ├── package.json
